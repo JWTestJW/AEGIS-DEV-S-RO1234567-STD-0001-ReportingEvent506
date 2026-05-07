@@ -364,6 +364,8 @@ jobs:
               echo "▲▲▲▲▲▲▲▲▲▲ End of Log Details ▲▲▲▲▲▲▲▲▲▲"
               exit 1
             fi
+          else
+            echo "Skipped setting ACL mask: '$DEST_PATH' has no default ACL" | tee -a "$LOG_FILE"
           fi
 
           # 6. 初回配信時のみ、配送先ルートに .Rprofile.org を作成する
