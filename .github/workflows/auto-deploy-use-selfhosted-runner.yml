@@ -191,24 +191,12 @@ jobs:
             echo "Triggered by workflow_dispatch or default. Using ref: ${{ github.ref }}"
           fi
 
-      - name: Check umask
-        run: |
-          echo "umask = $(umask)"
-          echo "umask -S = $(umask -S)"
-          echo "whoami = $(whoami)"
-          echo "id = $(id)"
-          
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
           path: checkoutDir
           ref: ${{ env.REF }}
-
-      - name: Check permissions after checkout
-        run: |
-          ls -la ${{ github.workspace }}/
-          find ${{ github.workspace }} -type d | head -10 | xargs ls -ld
 
       - name: Prepare and Copy to Delivery Directory
         env:
@@ -339,7 +327,7 @@ jobs:
           done
 
           # rsyncの詳細な進捗はログファイルのみに出力する
-          if ! (umask 0000 && rsync -rv --no-perms --progress "${rsync_exclude_opts[@]}" checkoutDir/ "$DEST_PATH/") >> "$LOG_FILE" 2>&1; then
+          if ! rsync -rv --progress "${rsync_exclude_opts[@]}" checkoutDir/ "$DEST_PATH/" >> "$LOG_FILE" 2>&1; then
             echo "Error: Failed to copy files with rsync." | tee -a "$LOG_FILE"
             echo "▼▼▼▼▼▼▼▼▼▼ Log Details ▼▼▼▼▼▼▼▼▼▼"
             cat "$LOG_FILE"
