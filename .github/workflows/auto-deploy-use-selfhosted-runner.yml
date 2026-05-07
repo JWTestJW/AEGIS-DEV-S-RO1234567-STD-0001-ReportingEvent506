@@ -337,7 +337,9 @@ jobs:
           echo "Copied files to $DEST_PATH." >> "$LOG_FILE"
 
           # デフォルトACLのmaskを動的に取得
-          DEST_MASK=$(getfacl "$DEST_PATH" 2>/dev/null | awk -F: '/^default:mask/{print $3}')
+          DEST_MASK=$(getfacl "$DEST_PATH" 2>/dev/null | awk -F: '$1=="default" && $2=="mask" {print $NF; exit}')
+          DEST_MASK=$(echo "$DEST_MASK" | tr -d '[:space:]')
+          echo "Detected default ACL mask on destination: '${DEST_MASK:-<empty>}'" | tee -a "$LOG_FILE"
 
           # DESTのデフォルトACL maskが未設定の場合はmask再設定しない
           if [[ -n "$DEST_MASK" ]]; then
