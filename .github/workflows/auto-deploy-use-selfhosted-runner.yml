@@ -327,7 +327,7 @@ jobs:
           done
 
           # rsyncの詳細な進捗はログファイルのみに出力する
-          if ! rsync -rv --progress "${rsync_exclude_opts[@]}" checkoutDir/ "$DEST_PATH/" >> "$LOG_FILE" 2>&1; then
+          if ! rsync -rv --no-perms --progress "${rsync_exclude_opts[@]}" checkoutDir/ "$DEST_PATH/" >> "$LOG_FILE" 2>&1; then
             echo "Error: Failed to copy files with rsync." | tee -a "$LOG_FILE"
             echo "▼▼▼▼▼▼▼▼▼▼ Log Details ▼▼▼▼▼▼▼▼▼▼"
             cat "$LOG_FILE"
@@ -335,15 +335,6 @@ jobs:
             exit 1
           fi
           echo "Copied files to $DEST_PATH." >> "$LOG_FILE"
-
-          # rsync後にmaskがr-xに下方修正される為、再度rwx(directory)/rw-(file)に修正する
-          if ! find "$DEST_PATH" -type d -print0 | xargs -0 -r setfacl -m m:rwx,d:m:rwx || ! find "$DEST_PATH" -type f -print0 | xargs -0 -r setfacl -m m:rw-; then
-            echo "Error: failed to change mask." >> "$LOG_FILE"
-            cat "$LOG_FILE"
-            echo "▲▲▲▲▲▲▲▲▲▲ End of Log Details ▲▲▲▲▲▲▲▲▲▲"
-            exit 1
-          fi
-          echo "Succeeded to update mask(rwx/rw-) for deployed directories and files under $DEST_PATH." >> "$LOG_FILE"
 
           # 6. 初回配信時のみ、配送先ルートに .Rprofile.org を作成する
           #    二回目以降の配信では既存ファイルを維持し、再作成しない
