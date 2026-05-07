@@ -369,6 +369,7 @@ jobs:
           else
             echo "Skipped setting ACL mask: '$DEST_PATH' has no default ACL" | tee -a "$LOG_FILE"
           fi
+          echo "Succeeded to update mask(rwx/rw-) for deployed directories and files under $DEST_PATH." >> "$LOG_FILE"
 
           # 6. 初回配信時のみ、配送先ルートに .Rprofile.org を作成する
           #    二回目以降の配信では既存ファイルを維持し、再作成しない
