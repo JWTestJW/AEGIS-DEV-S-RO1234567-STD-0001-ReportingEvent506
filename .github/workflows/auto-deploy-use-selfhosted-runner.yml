@@ -318,12 +318,28 @@ jobs:
           # 5. checkoutDirからDEST_PATHへファイルをコピーする
           echo "Copying files from checkoutDir to $DEST_PATH" | tee -a "$LOG_FILE"
           rsync_exclude_opts=()
-          for exclude in "${COPY_EXCLUDE_FILES[@]}"; do
-            rsync_exclude_opts+=(--exclude "$exclude")
-          done
+          # ディレクトリ除外ルールを先に追加
           for exclude in "${COPY_EXCLUDE_DIRS[@]}"; do
-            # ディレクトリの除外には末尾にスラッシュを追加して、同名のファイルを誤って除外しないようにする
             rsync_exclude_opts+=(--exclude "$exclude/")
+          done
+
+          # ファイル除外ルールを追加。同名のディレクトリが存在する場合は、--includeを追加しない。
+          for exclude in "${COPY_EXCLUDE_FILES[@]}"; do
+            is_in_dirs=0
+            for dir in "${COPY_EXCLUDE_DIRS[@]}"; do
+              if [[ "$exclude" == "$dir" ]]; then
+                is_in_dirs=1
+                break
+              fi
+            done
+            if [[ $is_in_dirs -eq 1 ]]; then
+              # ファイルとディレクトリが同名の場合：ファイルのみ除外（ディレクトリは既に除外済み）
+              rsync_exclude_opts+=(--exclude "$exclude")
+            else
+              # 同名ディレクトリが無い場合：先にディレクトリを許可し、次にファイルを除外
+              rsync_exclude_opts+=(--include "$exclude/")
+              rsync_exclude_opts+=(--exclude "$exclude")
+            fi
           done
 
           # rsyncの詳細な進捗はログファイルのみに出力する
