@@ -342,6 +342,8 @@ jobs:
             fi
           done
 
+          sleep 60
+
           # rsyncの詳細な進捗はログファイルのみに出力する
           if ! rsync -rtv --omit-dir-times --progress "${rsync_exclude_opts[@]}" checkoutDir/ "$DEST_PATH/" >> "$LOG_FILE" 2>&1; then
             echo "Error: Failed to copy files with rsync." | tee -a "$LOG_FILE"
